@@ -1,0 +1,32 @@
+{
+  "name": "mainajoi",
+  "version": "0.0.1",
+  "description": "Transform pgModeler dbm (dbmodel) file into Joi objects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitpear/mainajoi.git"
+  },
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "joi",
+    "hapi",
+    "pgmodeler",
+    "dbm",
+    "dbmodel"
+  ],
+  "author": "Marco Rondini",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bitpear/mainajoi/issues"
+  },
+  "homepage": "https://github.com/bitpear/mainajoi#readme",
+  "dependencies": {
+    "xmldoc": "^1.1.0",
+    "yargs": "^11.0.0"
+  }
+}
