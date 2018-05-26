@@ -8,117 +8,50 @@ class MainaJoi {
   constructor({
     file,
     xml,
+    options,
   }){
-    /* this._strategies = {
-      position: () => null,
-
-      table: (t) => {
-        const table = {
-          name: t.attr.name,
-        };
-
-        t.eachChild((t) => {
-          const r = this._resolve(t);
-          if(!r){
-            return;
-          }
-
-          console.log(r.joiString);
-
-          if(table[t.name]){
-            if(!Array.isArray(table[t.name])){
-              const tmp = table[t.name];
-              table[t.name] = [tmp];
-            }
-            table[t.name].push(r);
-          } else {
-            table[t.name] = r;
-          }
-        });
-
-        return table;
-      },
-
-      column: (t) => {
-        const column = {
-          name: t.attr.name,
-          notNull: 
-            t.attr['not-null'] && t.attr['not-null'] === 'true' ? 
-              true : false,
-          joiString: '',
-        };
-
-        t.eachChild((t) => {
-          column[t.name] = this._resolve(t);
-          column.joiString += column[t.name].joiString;
-        });
-
-        return column;
-      },
-
-      type: (t) => {
-        const type = {
-          name: t.attr.name,
-          length: parseInt(t.attr.length),
-        };
-
-        type.joiString = this._resolve(type, types, 'type');
-
-        return type;
-      },
-
-      comment: (t) => {
-        return {
-          value: t.val,
-          // TODO escape valore commento
-          joiString: `.description('${t.val}')`,
-        };
-      },
-    };
-    
-    this._baseTypes = {
-      integer: ({name, length}) => 
-        `.number().integer()${length > 0 ? `.max(${length})` : `` }`,
-      text: ({name, length}) => 
-        `.string()${length > 0 ? `.max(${length})` : `` }`,
-      bool: ({name}) => 
-        `.boolean()`,
-      date: ({name}) => 
-        `.date()`,
-
-    }
-
-    this._typeStrategies = {
-      ...this._baseTypes,
-      bigserial: this._baseTypes.integer,
-      timestamp: this._baseTypes.integer,
-      bigint: this._baseTypes.integer,
-      //integer: this._baseTypes.integer,
-      varchar: this._baseTypes.text,
-      //text: this._baseTypes.string,
-      //bool: this._baseTypes.bool,
-      //date: this._baseTypes.date,
-    };
- */
     this._xml = xml || fs.readFileSync(file, 'utf8');
+    this.options = Object.assign({
+      export: false,
+    }, options);
   }
 
-  /*_resolve(t, strategies = this._strategies, type = 'tag'){
-    return (
-      strategies[t.name] || 
-      (() => console.log(`${type} ${t.name} not exists`))
-    )(t);
-  }*/
-
-
-
   _parse(){
-    const parsed = new XmlDocument(this._xml);
-    //console.log(parsed);
+    const xmlParsed = new XmlDocument(this._xml),
+      parsed = {},
+      ret = {};
 
-    parsed.eachChild((t) => {
-      console.log(JSON.stringify(resolve(t), null, 2))
+    xmlParsed.eachChild((t) => {
+      const r = resolve(t);
+      if(!r){
+        return;
+      }
+
+      // TODO: trasformare in funzione
+      if(parsed[t.name]){
+        if(!Array.isArray(parsed[t.name])){
+          const tmp = parsed[t.name];
+          parsed[t.name] = [tmp];
+        }
+        parsed[t.name].push(r);
+      } else {
+        parsed[t.name] = r;
+      }
     });
+
+    /*
+      gestire description tabella
+      gestire Joi.object per tabelle
+    */
+    (Array.isArray(parsed.table) ? parsed.table : [parsed.table]).forEach((table) => {
+      ret[table.name] = (Array.isArray(table.column) ? table.column : [table.column]).reduce((a, o) => {
+        a[o.name] = this.options.export ? o.type.value.joiString : o.type.value.get;
+        return a;
+      }, {});
+    });
+
+
+    console.log(ret)
   }
 
   generate(){
