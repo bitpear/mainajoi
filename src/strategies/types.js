@@ -5,36 +5,39 @@ function resolve(t){
   )(t);
 }
 
+function checkParams(jj, length, notNull, defaultValue){
+  if(length > 0){
+    jj = jj.max(length);
+  }
+
+  if(!notNull){
+    jj = jj.allow(null);
+  }
+
+  if(defaultValue){
+    jj = jj.default(defaultValue);
+  }
+}
+
 const baseTypes = {
-  integer: ({name, length}) => ({
-    joiString: `.number().integer()${length > 0 ? `.max(${length})` : `` }`,
-    get: (j) => {
-      let jj = j.number().integer();
-
-      if(length > 0){
-        jj = jj.max(length);
-      }
-
-      return jj;
-    },
+  integer: ({name, ...args}) => ({
+    joiString: `.number()
+      .integer()
+      ${args.length > 0 ? `.max(${args.length})` : `` }
+      ${!notNull ? `.allow(null)` : `` }
+      ${defaultValue ? `.default(${args.defaultValue})` : `` }`,
+      // TODO: funzione per aggiungere i parametri aggiuntivi per generazione stringa
+    get: (j) => checkParams(j.number().integer(), args),
   }),
-  text: ({name, length}) => ({
+  text: ({name, length, notNull, defaultValue}) => ({
     joiString: `.string()${length > 0 ? `.max(${length})` : `` }`,
-    get: (j) => {
-      let jj = j.string();
-
-      if(length > 0){
-        jj = jj.max(length);
-      }
-
-      return jj;
-    },
+    get: (j) => checkParams(j.string(), length, notNull, defaultValue),
   }),
-  bool: ({name}) => ({
+  bool: ({name, notNull, defaultValue}) => ({
     joiString: `.boolean()`,
     get: j => j.boolean(),
   }),
-  date: ({name}) => ({
+  date: ({name, notNull, defaultValue}) => ({
     joiString: `.date()`,
     get: j => j.date(),
   }),

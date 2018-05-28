@@ -1,7 +1,7 @@
 const types = require('./types');
 
-function resolve(t, strategies = tagStrategies, type = 'tag'){
-  return (strategies[t.name] || strategies['_default'])(t);
+function resolve(t, strategies = tagStrategies, type = 'tag', tp){
+  return (strategies[t.name] || strategies['_default'])(t, tp);
 }
 
 const tagStrategies = {
@@ -46,29 +46,42 @@ const tagStrategies = {
     const column = {
       name: t.attr.name,
       joiString: '',
-      notNull: 
+      /*notNull: 
         t.attr['not-null'] && t.attr['not-null'] === 'true' ? 
           true : false,
+      defaultValue: t.attr['default-value'],*/
     };
 
     t.eachChild((tc) => {
-      let ct = column[tc.name] = resolve(tc);
+      let ct = column[tc.name] = resolve(tc, undefined, undefined, t);
       column.joiString += ct.value.joiString;
 
-      if(!column.notNull){
+
+
+      /*if(!column.notNull){
         ct.value.joiString = `${ct.value.joiString}.allow(null)`;
         let cb = ct.value.get;
         ct.value.get = (j) => cb(j.allow(null));
       }
+
+      if(column.defaultValue){
+        ct.value.joiString = `${ct.value.joiString}.default(${column.defaultValue})`;
+        let cb = ct.value.get;
+        ct.value.get = (j) => cb(j.default(column.defaultValue));
+      }*/
     });
 
     return column;
   },
 
-  type: (t) => {
+  type: (t, tp) => {
     const type = {
       name: t.attr.name,
       length: parseInt(t.attr.length),
+      notNull: 
+        tp.attr['not-null'] && tp.attr['not-null'] === 'true' ? 
+          true : false,
+      defaultValue: tp.attr['default-value'],
     };
 
     type.value = resolve(type, types, 'type');
