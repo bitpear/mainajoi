@@ -1,7 +1,10 @@
 'use strict';
 
 const fs = require('fs');
-const { XmlDocument } = require('xmldoc');
+
+const { XmlDocument } = require('xmldoc'),
+  beautify = require('js-beautify').js_beautify;
+
 const resolve = require('./strategies');
 
 class MainaJoi {
@@ -12,7 +15,7 @@ class MainaJoi {
   }){
     this._xml = xml || fs.readFileSync(file, 'utf8');
     this.options = Object.assign({
-      export: false,
+      export: true,
     }, options);
   }
 
@@ -27,15 +30,10 @@ class MainaJoi {
         return;
       }
 
-      // TODO: trasformare in funzione
       if(parsed[t.name]){
-        if(!Array.isArray(parsed[t.name])){
-          const tmp = parsed[t.name];
-          parsed[t.name] = [tmp];
-        }
         parsed[t.name].push(r);
       } else {
-        parsed[t.name] = r;
+        parsed[t.name] = [r];
       }
     });
 
@@ -43,15 +41,27 @@ class MainaJoi {
       gestire description tabella
       gestire Joi.object per tabelle
     */
-    (Array.isArray(parsed.table) ? parsed.table : [parsed.table]).forEach((table) => {
-      ret[table.name] = (Array.isArray(table.column) ? table.column : [table.column]).reduce((a, o) => {
-        a[o.name] = this.options.export ? o.type.value.joiString : o.type.value.get;
+    const a = [];
+    parsed.table.forEach((table) => {
+      let joiString = [];
+      ret[table.name] = table.column.reduce((a, o) => {
+        if(this.options.export){
+          // https://www.npmjs.com/package/js-beautify
+          joiString.push(` "${o.name}": ${o.joiString}`);
+        } else {
+          a[o.name] = o.type.value.get;
+        }
         return a;
       }, {});
+      // shitty.
+      a.push(`"${table.name}": Joi.object().keys({${joiString.join(",\n")}})`);
     });
+    const jsjs = `{
+      ${a.join(",\n")}
+    }
+    `;
 
-
-    console.log(ret)
+    console.log(beautify(jsjs, { indent_size: 2 }))
   }
 
   generate(){

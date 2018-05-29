@@ -1,3 +1,5 @@
+'use strict';
+
 const types = require('./types');
 
 function resolve(t, strategies = tagStrategies, type = 'tag', tp){
@@ -14,7 +16,7 @@ const tagStrategies = {
   role: () => null,
   schema: () => null,
   dbmodel: () => null,
-  
+
   database: t => t.attr.name,
 
   table: (t) => {
@@ -29,46 +31,32 @@ const tagStrategies = {
       }
 
       if(table[t.name]){
-        if(!Array.isArray(table[t.name])){
-          const tmp = table[t.name];
-          table[t.name] = [tmp];
-        }
         table[t.name].push(r);
       } else {
-        table[t.name] = r;
+        table[t.name] = [r];
       }
     });
 
     return table;
   },
 
+  /*
+    trasformare joiString in value.joiString
+    aggiungere value.get
+  */
   column: (t) => {
     const column = {
       name: t.attr.name,
-      joiString: '',
-      /*notNull: 
-        t.attr['not-null'] && t.attr['not-null'] === 'true' ? 
-          true : false,
-      defaultValue: t.attr['default-value'],*/
+      value: {
+        joiString,
+        get,
+      },
+      joiString: 'Joi',
     };
 
     t.eachChild((tc) => {
       let ct = column[tc.name] = resolve(tc, undefined, undefined, t);
       column.joiString += ct.value.joiString;
-
-
-
-      /*if(!column.notNull){
-        ct.value.joiString = `${ct.value.joiString}.allow(null)`;
-        let cb = ct.value.get;
-        ct.value.get = (j) => cb(j.allow(null));
-      }
-
-      if(column.defaultValue){
-        ct.value.joiString = `${ct.value.joiString}.default(${column.defaultValue})`;
-        let cb = ct.value.get;
-        ct.value.get = (j) => cb(j.default(column.defaultValue));
-      }*/
     });
 
     return column;
@@ -100,4 +88,4 @@ const tagStrategies = {
   },
 };
 
-  module.exports = resolve;
+module.exports = resolve;
