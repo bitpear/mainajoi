@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/bitpear/mainajoi#readme",
   "dependencies": {
+    "joi": "^13.4.0",
     "js-beautify": "^1.7.5",
     "xmldoc": "^1.1.0",
     "yargs": "^11.0.0"

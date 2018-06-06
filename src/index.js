@@ -3,6 +3,7 @@
 const fs = require('fs');
 
 const { XmlDocument } = require('xmldoc'),
+  Joi = require('joi'),
   beautify = require('js-beautify').js_beautify;
 
 const resolve = require('./strategies');
@@ -17,6 +18,8 @@ class MainaJoi {
     this.options = Object.assign({
       export: true,
     }, options);
+
+    console.log(this.options)
   }
 
   _parse(){
@@ -41,27 +44,46 @@ class MainaJoi {
       gestire description tabella
       gestire Joi.object per tabelle
     */
-    const a = [];
+    //const a = [];
     parsed.table.forEach((table) => {
       let joiString = [];
-      ret[table.name] = table.column.reduce((a, o) => {
+      ret[table.name] = table.column.reduce((acc, obj) => {
         if(this.options.export){
           // https://www.npmjs.com/package/js-beautify
-          joiString.push(` "${o.name}": ${o.joiString}`);
+          //joiString.push(` "${o.name}": ${o.joiString}`);
+          acc[obj.name] = obj.joiString;
         } else {
-          a[o.name] = o.type.value.get;
+          acc.keys({
+            [obj.name]: obj.type.value.get(Joi),
+          });
+          //acc[obj.name] = () => obj.type.value.get(Joi);
         }
-        return a;
-      }, {});
+        return acc;
+      }, Joi.object({
+        aaaaa: Joi.number()
+      }));
+      //console.log(ret)
       // shitty.
-      a.push(`"${table.name}": Joi.object().keys({${joiString.join(",\n")}})`);
+      //a.push(`"${table.name}": Joi.object().keys({${joiString.join(",\n")}})`);
     });
-    const jsjs = `{
+
+    if(this.options.export){
+      return beautify(
+        JSON.stringify(ret, null, 2).replace(/(".*?":[\s]*)"(.*?)"(,?\n)/g, '$1: $2$3'), {
+          indent_size: 2,
+        }
+      );
+    } else {
+      return ret;
+    }
+
+
+    /*const jsjs = `{
       ${a.join(",\n")}
     }
-    `;
+    `;*/
 
-    console.log(beautify(jsjs, { indent_size: 2 }))
+    //console.log())
   }
 
   generate(){
@@ -71,5 +93,14 @@ class MainaJoi {
 
 module.exports = MainaJoi;
 
-const m = new MainaJoi({file: './dbmodel.dbm'});
-m._parse();
+const m = new MainaJoi({
+  file: './dbmodel.dbm',
+  options: {
+    export: false,
+  },
+});
+
+const p = m._parse();
+console.log(p.user.schema());
+
+//console.log(p.user.id())

@@ -48,8 +48,8 @@ const tagStrategies = {
     const column = {
       name: t.attr.name,
       value: {
-        joiString,
-        get,
+        joiString: '',
+        get: () => {},
       },
       joiString: 'Joi',
     };
