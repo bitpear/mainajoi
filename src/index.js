@@ -53,15 +53,13 @@ class MainaJoi {
           //joiString.push(` "${o.name}": ${o.joiString}`);
           acc[obj.name] = obj.joiString;
         } else {
-          acc.keys({
+          acc = acc.append({
             [obj.name]: obj.type.value.get(Joi),
           });
           //acc[obj.name] = () => obj.type.value.get(Joi);
         }
         return acc;
-      }, Joi.object({
-        aaaaa: Joi.number()
-      }));
+      }, Joi.object());
       //console.log(ret)
       // shitty.
       //a.push(`"${table.name}": Joi.object().keys({${joiString.join(",\n")}})`);
