@@ -2,20 +2,24 @@
 
 const types = require('./types');
 
-function resolve(t, strategies = tagStrategies, type = 'tag', tp){
+function resolve(t, strategies = tagStrategies, type = 'tag', tp /*parent*/ ) {
   return (strategies[t.name] || strategies['_default'])(t, tp);
 }
+
+const Empty = () => null;
 
 const tagStrategies = {
   _default: (t) => {
     console.error(`${t.name} not exists`)
   },
 
-  position: () => null,
-  index: () => null,
-  role: () => null,
-  schema: () => null,
-  dbmodel: () => null,
+  position: Empty,
+  index: Empty,
+  role: Empty,
+  schema: Empty,
+  dbmodel: Empty,
+  constraint: Empty,
+  customidxs: Empty, // da gestire
 
   database: t => t.attr.name,
 
@@ -26,38 +30,40 @@ const tagStrategies = {
 
     t.eachChild((t) => {
       const r = resolve(t);
-      if(!r){
+      if (!r) {
         return;
       }
 
-      if(table[t.name]){
-        table[t.name].push(r);
-      } else {
-        table[t.name] = [r];
-      }
+      (
+        table[t.name] = table[t.name] || []
+      ).push(r);
     });
 
     return table;
   },
 
-  /*
-    trasformare joiString in value.joiString
-    aggiungere value.get
-  */
   column: (t) => {
     const column = {
       name: t.attr.name,
       value: {
-        joiString: '',
-        get: () => {},
-      },
-      joiString: 'Joi',
-    };
+        getString: (prefix = 'Joi') => {
+          t.eachChild((tc) => {
+            const ct = resolve(tc, undefined, undefined, t);
+            prefix += ct.value.getString();
+          });
 
-    t.eachChild((tc) => {
-      let ct = column[tc.name] = resolve(tc, undefined, undefined, t);
-      column.joiString += ct.value.joiString;
-    });
+          return prefix;
+        },
+
+        get: (base = {}) => {
+          t.eachChild((tc) => {
+            base[tc.name] = resolve(tc, undefined, undefined, t);
+          });
+
+          return base;
+        },
+      },
+    };
 
     return column;
   },
@@ -66,9 +72,8 @@ const tagStrategies = {
     const type = {
       name: t.attr.name,
       length: parseInt(t.attr.length),
-      notNull: 
-        tp.attr['not-null'] && tp.attr['not-null'] === 'true' ? 
-          true : false,
+      notNull: tp.attr['not-null'] && tp.attr['not-null'] === 'true' ?
+        true : false,
       defaultValue: tp.attr['default-value'],
     };
 
@@ -80,7 +85,7 @@ const tagStrategies = {
   comment: (t) => {
     return {
       value: {
-        joiString: `.description('${t.val}')`,
+        getString: () => `.description('${t.val}')`,
         get: j => j.description(t.val),
       },
       _value: t.val,
