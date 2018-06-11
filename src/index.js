@@ -9,7 +9,7 @@ const {
   beautify = require('js-beautify').js_beautify;
 
 const resolve = require('./strategies'),
-  Table = require('./Table');
+  Database = require('./Database');
 
 class MainaJoi {
   constructor({
@@ -23,52 +23,34 @@ class MainaJoi {
 
   _parse() {
     const xmlParsed = new XmlDocument(this._xml),
-      parsed = {},
+      db = new Database(),
       ret = {};
 
-    xmlParsed.eachChild((t) => {
-      const r = resolve(t);
+    xmlParsed.eachChild((tag) => {
+      const r = resolve({
+        tag,
+        db,
+      });
+
       if (!r) {
         return;
       }
 
-      (
-        parsed[t.name] = parsed[t.name] || []
-      ).push(r);
+      switch (tag.name) {
+        case 'database':
+          db.setName(r);
+          break;
+
+        case 'table':
+          db.add(r);
+          break;
+
+        default:
+          db.addCustom(tag.name, r);
+      }
     });
 
-
-
-    /*
-      gestire description tabella
-      gestire Joi.object per tabelle
-    */
-    parsed.table.forEach((table) => {
-      ret[table.name] = new Table(table);
-    });
-
-
-
-    // TODO: da rivedere export
-    /*if(this.options.export){
-      return beautify(
-        JSON.stringify(ret, null, 2).replace(/(".*?":[\s]*)"(.*?)"(,?\n)/g, '$1: $2$3'), {
-          indent_size: 2,
-        }
-      );
-    } else {
-      return ret;
-    }*/
-
-
-    /*const jsjs = `{
-      ${a.join(",\n")}
-    }
-    `;*/
-
-    //console.log())
-
-    return ret;
+    return db;
   }
 
   generate() {
@@ -84,4 +66,7 @@ const m = new MainaJoi({
 });
 
 const p = m._parse();
-console.log(Object.keys(p.topic.get()));
+const cols = p.get('topic')
+  .get('id');
+
+console.log(cols);

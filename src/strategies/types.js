@@ -1,10 +1,3 @@
-function resolve(t) {
-  return (
-    typeStrategies[t.name] ||
-    (() => console.log(`type ${t.name} not exists`))
-  )(t);
-}
-
 function checkParams(jj, {
   length,
   notNull,

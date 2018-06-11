@@ -1,33 +1,98 @@
 'use strict';
 
-const types = require('./types');
+const types = require('./types'),
+  Table = require('../Table');
 
-function resolve(t, strategies = tagStrategies, type = 'tag', tp /*parent*/ ) {
+let _db = null;
+
+/*function resolve(t, strategies = tagStrategies, type = 'tag', tp ) {
   return (strategies[t.name] || strategies['_default'])(t, tp);
+}*/
+
+function resolve({
+  tag,
+  strategies = tagStrategies,
+  type = 'tag',
+  tagParent,
+  db = _db,
+}) {
+  if (db && !_db) {
+    _db = db;
+  }
+
+  return (strategies[tag.name] || strategies['_default'])({
+    tag,
+    tagParent,
+    db,
+  });
 }
 
-const Empty = () => null;
+const Empty = () => null,
+  getTableName = data => data.split('.')[1].replace(/"(.*?)"/, '$1');
 
 const tagStrategies = {
-  _default: (t) => {
-    console.error(`${t.name} not exists`)
-  },
-
   position: Empty,
   index: Empty,
   role: Empty,
   schema: Empty,
+  object: Empty,
   dbmodel: Empty,
-  constraint: Empty,
-  relationship: Empty, // non gestisco visto che i dati eventualmente vengono presi da altre tabelle.
-  customidxs: Empty, // da gestire? vengono da altre tabelle
+  customidxs: Empty,
 
-  database: t => t.attr.name,
+  _default: ({
+    tag,
+  }) => {
+    console.error(`${tag.name} not exists`)
+  },
 
-  customidxs: (t) => {
+  //relationship: Empty, // non gestisco visto che i dati eventualmente vengono presi da altre tabelle.
+
+  database: ({
+    tag,
+  }) => tag.attr.name,
+
+
+  // TODO: finire gestione indice primario per generazione relationship
+  constraint: ({
+    tag,
+    db,
+  }) => {
+    tag.eachChild((tagChild) => {
+      const r = resolve({
+        tag: tagChild,
+      });
+
+      if (!r) {
+        return;
+      }
+
+      console.log(r);
+    });
+  },
+
+  columns: ({
+    tag,
+  }) => {
+    switch (tag.attr['ref-type']) {
+      case 'src-columns':
+        return {
+          sc: tag.attr.names,
+        };
+      default:
+        return null;
+    };
+  },
+
+  /*customidxs: (t) => {
     switch (t.attr['object-type']) {
       case 'column':
-        console.log(t);
+        //console.log(t);
+        t.eachChild((tc) => {
+          const r = resolve(tc);
+          if (!r) {
+            return null;
+          }
+        });
 
         return null;
         break;
@@ -35,34 +100,80 @@ const tagStrategies = {
       default:
         return null;
     }
+  },*/
+
+  relationship: ({
+    tag,
+    db,
+  }) => {
+    const {
+      type,
+    } = tag.attr;
+
+    const src_table = getTableName(tag.attr['src-table']),
+      dst_table = getTableName(tag.attr['dst-table']);
+
+    switch (type) {
+      case 'rel11':
+        console.log('src', db.get(src_table), 'dst', dst_table, db.get(dst_table));
+        const src_col_pattern = tag.attr['src-col-pattern'].
+        //console.log(t.attr);
+        break;
+
+      case 'rel1n':
+        //console.log(t.attr);
+        break;
+
+      case 'relnn':
+        //console.log(t.attr);
+        break;
+
+
+      default:
+        throw new Error(`Relationship type not recognized: ${type}`);
+    }
+
+    return null;
   },
 
-  table: (t) => {
+  table: ({
+    tag,
+  }) => {
     const table = {
-      name: t.attr.name,
+      name: tag.attr.name,
     };
 
-    t.eachChild((t) => {
-      const r = resolve(t);
+
+    // TODO gestire new Table().add per singola colonna db
+    tag.eachChild((tagChild) => {
+      const r = resolve({
+        tag: tagChild,
+      });
+
       if (!r) {
         return;
       }
 
       (
-        table[t.name] = table[t.name] || []
+        table[tagChild.name] = table[tagChild.name] || []
       ).push(r);
     });
 
-    return table;
+    return new Table(table);
   },
 
-  column: (t) => {
+  column: ({
+    tag,
+  }) => {
     const column = {
-      name: t.attr.name,
+      name: tag.attr.name,
       value: {
         getString: (prefix = 'Joi') => {
-          t.eachChild((tc) => {
-            const ct = resolve(tc, undefined, undefined, t);
+          tag.eachChild((tagChild) => {
+            const ct = resolve({
+              tag: tagChild,
+              tagParent: tag,
+            });
             prefix += ct.value.getString();
           });
 
@@ -70,8 +181,11 @@ const tagStrategies = {
         },
 
         get: (base = {}) => {
-          t.eachChild((tc) => {
-            base[tc.name] = resolve(tc, undefined, undefined, t);
+          tag.eachChild((tagChild) => {
+            base[tagChild.name] = resolve({
+              tag: tagChild,
+              tagParent: tag,
+            });
           });
 
           return base;
@@ -82,27 +196,36 @@ const tagStrategies = {
     return column;
   },
 
-  type: (t, tp) => {
+  type: ({
+    tag,
+    tagParent,
+  }) => {
     const type = {
-      name: t.attr.name,
-      length: parseInt(t.attr.length),
-      notNull: tp.attr['not-null'] && tp.attr['not-null'] === 'true' ?
+      name: tag.attr.name,
+      length: parseInt(tag.attr.length),
+      notNull: tagParent.attr['not-null'] && tagParent.attr['not-null'] === 'true' ?
         true : false,
-      defaultValue: tp.attr['default-value'],
+      defaultValue: tagParent.attr['default-value'],
     };
 
-    type.value = resolve(type, types, 'type');
+    type.value = resolve({
+      tag: type,
+      strategies: types,
+      type: 'type',
+    });
 
     return type;
   },
 
-  comment: (t) => {
+  comment: ({
+    tag,
+  }) => {
     return {
       value: {
-        getString: () => `.description('${t.val}')`,
-        get: j => j.description(t.val),
+        getString: () => `.description('${tag.val}')`,
+        get: j => j.description(tag.val),
       },
-      _value: t.val,
+      _value: tag.val,
     };
   },
 };
