@@ -94,11 +94,7 @@ const types = {
   timestamp: baseTypes.integer,
   bigint: baseTypes.integer,
   int4: baseTypes.integer,
-  //integer: baseTypes.integer,
   varchar: baseTypes.text,
-  //text: baseTypes.string,
-  //bool: baseTypes.bool,
-  //date: baseTypes.date,
 };
 
 module.exports = types;

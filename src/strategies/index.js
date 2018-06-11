@@ -19,9 +19,23 @@ const tagStrategies = {
   schema: Empty,
   dbmodel: Empty,
   constraint: Empty,
-  customidxs: Empty, // da gestire
+  relationship: Empty, // non gestisco visto che i dati eventualmente vengono presi da altre tabelle.
+  customidxs: Empty, // da gestire? vengono da altre tabelle
 
   database: t => t.attr.name,
+
+  customidxs: (t) => {
+    switch (t.attr['object-type']) {
+      case 'column':
+        console.log(t);
+
+        return null;
+        break;
+
+      default:
+        return null;
+    }
+  },
 
   table: (t) => {
     const table = {
