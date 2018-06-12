@@ -67,6 +67,6 @@ const m = new MainaJoi({
 
 const p = m._parse();
 const cols = p.get('topic')
-  .get('id');
+  .get();
 
 console.log(cols);

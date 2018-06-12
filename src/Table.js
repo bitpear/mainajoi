@@ -1,17 +1,21 @@
 const Joi = require('joi');
 
 class Table {
-  constructor(table) {
-    this._table = table;
-    this._columnsByName = this._reduceColumns((acc, obj) => acc.set(obj.name, obj.value), new Map());
-  }
-
-  get name() {
-    return this._table.name;
+  constructor(name) {
+    // TODO: rimuovere _columnsByName e lasciare una sola variabile
+    this.name = name;
+    this._columnsByName = new Map();
+    this._column = [];
   }
 
   _reduceColumns(cb, base) {
-    return this._table.column.reduce(cb, base);
+    return this._column.reduce(cb, base);
+  }
+
+  add(column) {
+    this._column.push(column);
+    this._columnsByName.set(column.name, column.value);
+    return this;
   }
 
   get(name, j = Joi) {

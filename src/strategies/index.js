@@ -139,12 +139,8 @@ const tagStrategies = {
   table: ({
     tag,
   }) => {
-    const table = {
-      name: tag.attr.name,
-    };
+    const table = new Table(tag.attr.name);
 
-
-    // TODO gestire new Table().add per singola colonna db
     tag.eachChild((tagChild) => {
       const r = resolve({
         tag: tagChild,
@@ -154,17 +150,16 @@ const tagStrategies = {
         return;
       }
 
-      (
-        table[tagChild.name] = table[tagChild.name] || []
-      ).push(r);
+      table.add(r);
     });
 
-    return new Table(table);
+    return table;
   },
 
   column: ({
     tag,
   }) => {
+    // TODO: aggiungere new Column; fare come sopra: spostare get e getString dentro la classe, fare un solo eachChild all'interno del parsing, column.add(risolto);
     const column = {
       name: tag.attr.name,
       value: {
