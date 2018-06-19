@@ -1,7 +1,8 @@
 'use strict';
 
 const types = require('./types'),
-  Table = require('../Table');
+  Table = require('../Table'),
+  Column = require('../Column');
 
 let _db = null;
 
@@ -159,7 +160,21 @@ const tagStrategies = {
   column: ({
     tag,
   }) => {
-    // TODO: aggiungere new Column; fare come sopra: spostare get e getString dentro la classe, fare un solo eachChild all'interno del parsing, column.add(risolto);
+    // TODO: aggiungere new Column; 
+    //  fare come sopra: spostare get e getString dentro la classe, 
+    //  fare un solo eachChild all'interno del parsing, column.add(risolto);
+
+    const column = new Column(tag.attr.name);
+
+    tag.eachChild((tagChild) => {
+
+      const ct = resolve({
+        tag: tagChild,
+        tagParent: tag,
+      });
+      prefix += ct.value.getString();
+    });
+
     const column = {
       name: tag.attr.name,
       value: {
