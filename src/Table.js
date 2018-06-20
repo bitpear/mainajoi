@@ -31,14 +31,14 @@ class Table {
   getAll(j = Joi) {
     return this._reduceColumns((acc, obj) => ({
       ...acc,
-      [obj.name]: obj.value.get().type.value.get(j),
+      [obj.name]: obj.get().type.get(j),
     }), {});
   }
 
   getSchema(j = Joi) {
     return this._reduceColumns((acc, obj) => {
       return acc.append({
-        [obj.name]: obj.value.get().type.value.get(j),
+        [obj.name]: obj.get().type.value.get(j),
       });
     }, Joi.object());
   }
@@ -46,7 +46,7 @@ class Table {
   getString() {
     return this._reduceColumns((acc, obj) => ({
       ...acc,
-      [obj.name]: obj.value.getString(),
+      [obj.name]: obj.getString(),
     }), {});
   }
 }

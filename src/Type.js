@@ -50,20 +50,47 @@ function params(type, {
   };
 }
 
-const baseTypes = {
+class Type {
+  constructor({
+    name,
+    length,
+    notNull,
+    defaultValue,
+  }) {
+    this._type = null;
+    this.name = name;
+    this.length = length;
+    this.notNull = notNull;
+    this.defaultValue = defaultValue;
+  }
+
+  set(type) {
+    this._type = type;
+  }
+
+  get(j) {
+    return this._type.get(j);
+  }
+
+  getString() {
+    return this._type.getString();
+  }
+}
+
+Type.baseTypes = {
   integer: ({
     name,
     ...args
   }) => ({
     getString: () => checkParams(`.number().integer()`, params('integer', args)),
-    get: (j) => checkParams(j.number().integer(), params('integer', args)),
+    get: j => checkParams(j.number().integer(), params('integer', args)),
   }),
   text: ({
     name,
     ...args
   }) => ({
     getString: () => checkParams(`.string()`, params('text', args)),
-    get: (j) => checkParams(j.string(), params('text', args)),
+    get: j => checkParams(j.string(), params('text', args)),
   }),
   bool: ({
     name,
@@ -81,13 +108,13 @@ const baseTypes = {
   }),
 };
 
-const types = {
-  ...baseTypes,
-  bigserial: baseTypes.integer,
-  timestamp: baseTypes.integer,
-  bigint: baseTypes.integer,
-  int4: baseTypes.integer,
-  varchar: baseTypes.text,
+Type.types = {
+  ...Type.baseTypes,
+  bigserial: Type.baseTypes.integer,
+  timestamp: Type.baseTypes.integer,
+  bigint: Type.baseTypes.integer,
+  int4: Type.baseTypes.integer,
+  varchar: Type.baseTypes.text,
 };
 
-module.exports = types;
+module.exports = Type;

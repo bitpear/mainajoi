@@ -1,8 +1,8 @@
 'use strict';
 
-const types = require('./types'),
-  Table = require('../Table'),
-  Column = require('../Column');
+const Type = require('./Type'),
+  Table = require('./Table'),
+  Column = require('./Column');
 
 let _db = null;
 
@@ -67,7 +67,7 @@ const tagStrategies = {
         return;
       }
 
-      console.log(r);
+      //console.log(r);
     });
   },
 
@@ -116,7 +116,7 @@ const tagStrategies = {
 
     switch (type) {
       case 'rel11':
-        console.log('src', db.get(src_table), 'dst', dst_table, db.get(dst_table));
+        //console.log('src', db.get(src_table), 'dst', dst_table, db.get(dst_table));
         const src_col_pattern = tag.attr['src-col-pattern'].
         //console.log(t.attr);
         break;
@@ -160,22 +160,18 @@ const tagStrategies = {
   column: ({
     tag,
   }) => {
-    // TODO: aggiungere new Column; 
-    //  fare come sopra: spostare get e getString dentro la classe, 
-    //  fare un solo eachChild all'interno del parsing, column.add(risolto);
-
     const column = new Column(tag.attr.name);
 
     tag.eachChild((tagChild) => {
-
-      const ct = resolve({
+      const prop = resolve({
         tag: tagChild,
         tagParent: tag,
       });
-      prefix += ct.value.getString();
+
+      column.add(tagChild.name, prop);
     });
 
-    const column = {
+    /*const column = {
       name: tag.attr.name,
       value: {
         getString: (prefix = 'Joi') => {
@@ -198,10 +194,11 @@ const tagStrategies = {
             });
           });
 
+          console.log('base', base);
           return base;
         },
       },
-    };
+    };*/
 
     return column;
   },
@@ -210,7 +207,22 @@ const tagStrategies = {
     tag,
     tagParent,
   }) => {
-    const type = {
+
+    const type = new Type({
+      name: tag.attr.name,
+      length: parseInt(tag.attr.length),
+      notNull: tagParent.attr['not-null'] && tagParent.attr['not-null'] === 'true' ?
+        true : false,
+      defaultValue: tagParent.attr['default-value'],
+    });
+
+    type.set(resolve({
+      tag: type,
+      strategies: Type.types,
+      type: 'type',
+    }));
+
+    /*const type = {
       name: tag.attr.name,
       length: parseInt(tag.attr.length),
       notNull: tagParent.attr['not-null'] && tagParent.attr['not-null'] === 'true' ?
@@ -218,11 +230,7 @@ const tagStrategies = {
       defaultValue: tagParent.attr['default-value'],
     };
 
-    type.value = resolve({
-      tag: type,
-      strategies: types,
-      type: 'type',
-    });
+    type.value = ;*/
 
     return type;
   },
