@@ -1,8 +1,8 @@
 'use strict';
 
-const Type = require('./Type'),
-  Table = require('./Table'),
-  Column = require('./Column');
+const Type = require('./lib/Type'),
+  Table = require('./lib/Table'),
+  Column = require('./lib/Column');
 
 let _db = null;
 
@@ -46,8 +46,6 @@ const tagStrategies = {
     console.error(`${tag.name} not exists`)
   },
 
-  //relationship: Empty, // non gestisco visto che i dati eventualmente vengono presi da altre tabelle.
-
   database: ({
     tag,
   }) => tag.attr.name,
@@ -83,25 +81,6 @@ const tagStrategies = {
         return null;
     };
   },
-
-  /*customidxs: (t) => {
-    switch (t.attr['object-type']) {
-      case 'column':
-        //console.log(t);
-        t.eachChild((tc) => {
-          const r = resolve(tc);
-          if (!r) {
-            return null;
-          }
-        });
-
-        return null;
-        break;
-
-      default:
-        return null;
-    }
-  },*/
 
   relationship: ({
     tag,
@@ -171,35 +150,6 @@ const tagStrategies = {
       column.add(tagChild.name, prop);
     });
 
-    /*const column = {
-      name: tag.attr.name,
-      value: {
-        getString: (prefix = 'Joi') => {
-          tag.eachChild((tagChild) => {
-            const ct = resolve({
-              tag: tagChild,
-              tagParent: tag,
-            });
-            prefix += ct.value.getString();
-          });
-
-          return prefix;
-        },
-
-        get: (base = {}) => {
-          tag.eachChild((tagChild) => {
-            base[tagChild.name] = resolve({
-              tag: tagChild,
-              tagParent: tag,
-            });
-          });
-
-          console.log('base', base);
-          return base;
-        },
-      },
-    };*/
-
     return column;
   },
 
@@ -221,16 +171,6 @@ const tagStrategies = {
       strategies: Type.types,
       type: 'type',
     }));
-
-    /*const type = {
-      name: tag.attr.name,
-      length: parseInt(tag.attr.length),
-      notNull: tagParent.attr['not-null'] && tagParent.attr['not-null'] === 'true' ?
-        true : false,
-      defaultValue: tagParent.attr['default-value'],
-    };
-
-    type.value = ;*/
 
     return type;
   },

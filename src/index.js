@@ -9,7 +9,7 @@ const {
   beautify = require('js-beautify').js_beautify;
 
 const resolve = require('./strategies'),
-  Database = require('./Database');
+  Database = require('./lib/Database');
 
 class MainaJoi {
   constructor({
