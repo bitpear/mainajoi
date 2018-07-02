@@ -36,9 +36,10 @@ const tagStrategies = {
   index: Empty,
   role: Empty,
   schema: Empty,
-  object: Empty,
+  //object: Empty,
   dbmodel: Empty,
-  customidxs: Empty,
+  //customidxs: Empty,
+  constraint: Empty,
 
   _default: ({
     tag,
@@ -52,11 +53,12 @@ const tagStrategies = {
 
 
   // TODO: finire gestione indice primario per generazione relationship
-  constraint: ({
+  /*constraint: ({
     tag,
     db,
   }) => {
     tag.eachChild((tagChild) => {
+      console.log(tagChild.name)
       const r = resolve({
         tag: tagChild,
       });
@@ -65,8 +67,33 @@ const tagStrategies = {
         return;
       }
 
+      console.log(r);
+    });
+  },*/
+
+  customidxs: ({
+    tag,
+    db,
+  }) => {
+    tag.eachChild((tagChild) => {
+      const r = resolve({
+        tag: tagChild,
+        db,
+      });
+
+      if (!r) {
+        return;
+      }
+
       //console.log(r);
     });
+  },
+
+  object: ({
+    tag,
+    db,
+  }) => {
+    console.log(tag.attr, db);
   },
 
   columns: ({
