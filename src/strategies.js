@@ -6,10 +6,6 @@ const Type = require('./lib/Type'),
 
 let _db = null;
 
-/*function resolve(t, strategies = tagStrategies, type = 'tag', tp ) {
-  return (strategies[t.name] || strategies['_default'])(t, tp);
-}*/
-
 function resolve({
   tag,
   strategies = tagStrategies,
@@ -36,65 +32,21 @@ const tagStrategies = {
   index: Empty,
   role: Empty,
   schema: Empty,
-  //object: Empty,
+  object: Empty,
   dbmodel: Empty,
-  //customidxs: Empty,
+  customidxs: Empty,
   constraint: Empty,
 
   _default: ({
     tag,
   }) => {
-    console.error(`${tag.name} not exists`)
+    console.error(`${tag.name} not exists`);
+    return null;
   },
 
   database: ({
     tag,
   }) => tag.attr.name,
-
-
-  // TODO: finire gestione indice primario per generazione relationship
-  /*constraint: ({
-    tag,
-    db,
-  }) => {
-    tag.eachChild((tagChild) => {
-      console.log(tagChild.name)
-      const r = resolve({
-        tag: tagChild,
-      });
-
-      if (!r) {
-        return;
-      }
-
-      console.log(r);
-    });
-  },*/
-
-  customidxs: ({
-    tag,
-    db,
-  }) => {
-    tag.eachChild((tagChild) => {
-      const r = resolve({
-        tag: tagChild,
-        db,
-      });
-
-      if (!r) {
-        return;
-      }
-
-      //console.log(r);
-    });
-  },
-
-  object: ({
-    tag,
-    db,
-  }) => {
-    console.log(tag.attr, db);
-  },
 
   columns: ({
     tag,
@@ -122,17 +74,20 @@ const tagStrategies = {
 
     switch (type) {
       case 'rel11':
-        //console.log('src', db.get(src_table), 'dst', dst_table, db.get(dst_table));
-        const src_col_pattern = tag.attr['src-col-pattern'].
-        //console.log(t.attr);
-        break;
-
       case 'rel1n':
-        //console.log(t.attr);
-        break;
+        return [{
+          src: dst_table,
+          dst: src_table,
+        }];
 
       case 'relnn':
-        //console.log(t.attr);
+        return [{
+          src: dst_table,
+          dst: src_table,
+        }, {
+          src: src_table,
+          dst: dst_table,
+        }];
         break;
 
 

@@ -4,9 +4,7 @@ const fs = require('fs');
 
 const {
   XmlDocument
-} = require('xmldoc'),
-  Joi = require('joi'),
-  beautify = require('js-beautify').js_beautify;
+} = require('xmldoc');
 
 const resolve = require('./strategies'),
   Database = require('./lib/Database');
@@ -18,7 +16,12 @@ class MainaJoi {
     options,
   }) {
     this._xml = xml || fs.readFileSync(file, 'utf8');
-    this.options = Object.assign({}, options);
+    this._options = Object.assign({}, options);
+    this._db = this._parse();
+  }
+
+  get(...args) {
+    return this._db.get(...args);
   }
 
   _parse() {
@@ -45,28 +48,17 @@ class MainaJoi {
           db.add(r);
           break;
 
+        case 'relationship':
+          r.forEach(rel => db.addRel(rel));
+          break;
+
         default:
-          db.addCustom(tag.name, r);
+          console.error('???');
       }
     });
 
     return db;
   }
-
-  generate() {
-
-  }
 }
 
 module.exports = MainaJoi;
-
-const m = new MainaJoi({
-  file: './dbmodel.dbm',
-  options: {},
-});
-
-const p = m._parse();
-const cols = p.get('topic')
-  .get();
-
-//console.log(cols);

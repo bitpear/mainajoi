@@ -1,6 +1,6 @@
 {
   "name": "mainajoi",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Transform pgModeler dbm (dbmodel) file into Joi objects",
   "main": "src/index.js",
   "scripts": {
@@ -30,5 +30,9 @@
     "js-beautify": "^1.7.5",
     "xmldoc": "^1.1.0",
     "yargs": "^11.0.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {}
 }

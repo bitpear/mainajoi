@@ -15,9 +15,8 @@ class Database {
     return this;
   }
 
-  addCustom(...args) {
-    console.log(args);
-    // TODO: completare funzione eventualmente ci siano altri tag da gestire
+  addRel(rel) {
+    this.get(rel.src).addRel(rel.dst, this.get(rel.dst));
     return this;
   }
 

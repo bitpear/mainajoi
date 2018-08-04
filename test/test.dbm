@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.1-beta1" last-position="0,0" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="new_database" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="user">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="520" y="360"/>
+	<column name="id" not-null="true">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[User ID]]></comment>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+		<comment><![CDATA[User Name]]></comment>
+	</column>
+	<constraint name="user_pk" type="pk-constr" table="public.&quot;user&quot;">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="post">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="920" y="360"/>
+	<column name="id" not-null="true">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[Post ID]]></comment>
+	</column>
+	<column name="text">
+		<type name="text" length="0"/>
+		<comment><![CDATA[Post Text]]></comment>
+	</column>
+	<constraint name="post_pk" type="pk-constr" table="public.post">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="user_has_many_post" type="rel1n"
+	 src-col-pattern="{sc}_{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#0ad49a"
+	 src-table="public.&quot;user&quot;"
+	 dst-table="public.post"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>
